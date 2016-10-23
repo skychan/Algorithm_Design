@@ -25,103 +25,54 @@ file.close()
 # input()
 print("data loaded")
 
-def DFSold(G,v):
-	global leader, explored, t, RV, leaderkey
-	explored.add(v)
-	leader[leaderkey].append(v)
-	gem = [node for node in G[v] if node not in explored]
-	for u in gem:
-		if u not in explored:
-			G[v].remove(u)
-			DFS(G,u)
-	t += 1
-	RV[t] = v
 
 def DFS(G,v,explored):
 	return list(G[v]-explored)
+	# return list(G[v]-set(explored.keys()))
 
-explored = set()
-t = 0
-RV = defaultdict(int)
+def DFSLoop(nodes,G):
+	leader = defaultdict(set)
+	explored = defaultdict(int)
+	explored_set = set()
+	t = 0
+	RV = defaultdict(int)
+	gem = []
+	for v in nodes:
+		if not explored[v]:
+			explored[v] = 1
+			explored_set.add(v)
+			gem.extend(DFS(G,v,explored_set))
+			leader[v].add(v)
+			while gem:
+				u = gem[-1]
+				if RV[u]:
+					new_gem = []
+				else:
+					explored[u] = 1
+					explored_set.add(u)
+					new_gem = DFS(G,u,explored_set)
+				if new_gem:
+					gem.extend(new_gem)
+				else:
+					if not RV[u]:
+						t += 1
+						RV[u] = t
+					gem.pop()
+					leader[v].add(u)
+			t += 1
+			RV[v] = t
+	return RV,leader
+
 nodes = list(V)
-# nodes.sort(reverse=True)
-# labeled = []
-# print(nodes)
-gem = []
-# forward
-for v in nodes:
-	if v not in explored:
-		explored.add(v)
-		gem.extend(DFS(G,v,explored))
-		while gem:
-			# print(gem)
-			u = gem[-1]
-			# explored.add(u)
-			# new_gem = DFS(G,u,explored)
-			# #
-			if RV[u]:
-				new_gem = []
-			else:
-				explored.add(u)
-				new_gem = DFS(G,u,explored)
-			if new_gem:
-				gem.extend(new_gem)
-			else:
-				if not RV[u]:
-					t += 1
-					RV[u] = t
-				gem.pop()
-				# t += 1
-				# RV[t]
-		t += 1
-		RV[v] = t
-		# labeled.append(u)
-
+RV,leader = DFSLoop(nodes,G)
 print("Forward drill done")
-# print(RV)
-# input()
 
-# nodes.sort(reverse=True)
 new_nodes = sorted(list(RV.keys()),key=RV.get,reverse=True)
-# print(new_nodes)
-explored = set()
-leader = defaultdict(set)
-gem = []
-# backword
-for v in new_nodes:
-	if v not in explored:
-		explored.add(v)
-		gem.extend(DFS(RG,v,explored))
-		leader[v].add(v)
-		while gem:
-			u = gem[-1]
-			explored.add(u)
-			new_gem = DFS(RG,u,explored)
-			if new_gem:
-				gem.extend(new_gem)
-			else:
-				gem.pop()
-				leader[v].add(u)
-
-# for v in nodes:
-# 	u = RV[v]
-# 	if u not in explored:
-# 		gem = [u]
-# 		while gem:
-# 			w = gem.pop()
-#
-# 			explored.add(w)
-# 			new_gem = DFS(RG,w,explored)
-# 			if new_gem:
-# 				gem.append(w)
-# 				gem += new_gem
-# 			else:
-# 				leader[u].append(w)
-
-
+RV,leader = DFSLoop(new_nodes,RG)
 print("Backword drill done")
 # print(leader)
-SCC = [len(item[1]) for item in leader.items()]
+# SCC = [len(item[1]) for item in leader.items()]
+SCC = list(map(len,leader.values()))
 SCC.sort(reverse=True)
 t2 = time.clock()
 if len(SCC) > 5:
