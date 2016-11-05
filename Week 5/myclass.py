@@ -55,11 +55,15 @@ class heap:
 
 
 	def update(self, node, value):
-		self.delete(node)
-		self.insert(node, value)
-			
+		# self.delete(node)
+		# self.insert(node, value)
+		i = self.V.index(node)
+		self.keys[node] = value
+		if self.keys[node] < self.keys[self.V[i//2]]:
+			self.swim(i)
+		else:
+			self.sink(i)
 
-	
 	def getMin(self):
 		if self.size:
 			node = self.V[1]
