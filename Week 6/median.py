@@ -10,4 +10,6 @@ while 1:
 	data.insert(int(line))
 	medians.append(data.getMedian())
 
+file.close()
+
 print(sum(medians)%10000)
